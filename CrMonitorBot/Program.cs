@@ -419,7 +419,6 @@ namespace CrMonitorBot
                         await Bot.SendTextMessageAsync(message.From.Id, Reply.startReply, replyMarkup: keyboard_reply);
                         break;
                     case "/show_supported_cryptos":
-                        //Тут бага есть :)
                         keyboard_inline = keyboards.SwitchMenu();
                         await Bot.SendTextMessageAsync(message.From.Id, Reply.Inline_Text);
                         UserCryptoCount c = new UserCryptoCount
@@ -471,7 +470,10 @@ namespace CrMonitorBot
                         user_status[message.From.Id] = "crypto_mode";
                         break;
                     default:
-                        await Bot.SendTextMessageAsync(message.From.Id, Reply.ChooseCommandPlease);
+                        if(user_status[message.From.Id] == "normal")
+                        {
+                            await Bot.SendTextMessageAsync(message.From.Id, Reply.ChooseCommandPlease);
+                        }
                         break;
                 }
             }
