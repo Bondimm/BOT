@@ -61,6 +61,7 @@ namespace CrMonitorBot
             InlineKeyboardMarkup keyboard_inline = keyboards.SwitchMenu();
             API_DBLogic DBLogic = new API_DBLogic();
             MsgReply Reply = new MsgReply();
+            DBCheck c = new DBCheck();
             string buttonText = e.CallbackQuery.Data;
             string name = $"{e.CallbackQuery.From.FirstName} {e.CallbackQuery.From.LastName}";
             Console.WriteLine($"{name} with id {e.CallbackQuery.From.Id} clicked button: '{buttonText}'");
@@ -74,7 +75,17 @@ namespace CrMonitorBot
             }
             if (user_status[e.CallbackQuery.From.Id] == "change_crypto_mode")
             {
-                await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ChangeCryptoInstruction2);
+
+                var x = await c.CryptoCheck(buttonText);
+                if(x == System.Net.HttpStatusCode.OK)
+                {
+                    await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ChangeCryptoInstruction2);
+                }
+                else
+                {
+                    await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ButtonState);
+                    return;
+                }
                 bool ex = currency_to_change_from_button.ContainsKey(e.CallbackQuery.From.Id);
                 if (ex == false)
                 {
@@ -89,6 +100,12 @@ namespace CrMonitorBot
             if (user_status[e.CallbackQuery.From.Id] == "remove_crypto_mode")
             {
                 Thread.Sleep(900);
+                var y = await c.CryptoCheck(buttonText);
+                if (y != System.Net.HttpStatusCode.OK)
+                {
+                    await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ButtonState);
+                    return;
+                }
                 var x = await DBLogic.RemoveCrypto(buttonText, e.CallbackQuery.From.Id);
                 if (x == System.Net.HttpStatusCode.NoContent)
                 {
@@ -112,15 +129,33 @@ namespace CrMonitorBot
             if (user_status[e.CallbackQuery.From.Id] == "crypto_mode")
             {
                 Thread.Sleep(755);
-                string x = await DBLogic.Crypto(buttonText, e.CallbackQuery.From.Id);
-                await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, x);
-                //user_status[e.CallbackQuery.From.Id] = "normal";
-                return;
+                try
+                {
+                    string x = await DBLogic.Crypto(buttonText, e.CallbackQuery.From.Id);
+                    await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, x);
+                    //user_status[e.CallbackQuery.From.Id] = "normal";
+                    return;
+                }
+                catch
+                {
+                    await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ButtonState);
+                    return;
+                }
+                //string x = await DBLogic.Crypto(buttonText, e.CallbackQuery.From.Id);
+                //await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, x);
+                ////user_status[e.CallbackQuery.From.Id] = "normal";
+                //return;
 
             }
             if (user_status[e.CallbackQuery.From.Id] == "remove_real_mode")
             {
                 Thread.Sleep(751);
+                var y = await c.RealCheck(buttonText);
+                if (y != System.Net.HttpStatusCode.OK)
+                {
+                    await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ButtonState);
+                    return;
+                }
                 var x = await DBLogic.RemoveReal(buttonText, e.CallbackQuery.From.Id);
                 if (x == System.Net.HttpStatusCode.NoContent)
                 {
@@ -183,6 +218,10 @@ namespace CrMonitorBot
                             try { await Bot.EditMessageTextAsync(e.CallbackQuery.From.Id, message_to_edit[e.CallbackQuery.From.Id].Message.MessageId, combindedString, replyMarkup: keyboard_inline); }
                             catch { }
                         }
+                    }
+                    if(buttonText != "Назад" && buttonText != "Вперед")
+                    {
+                        await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ButtonState_supportedcrypto);
                     }
                 }
                 else

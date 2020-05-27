@@ -1,4 +1,10 @@
 ﻿using CrMonitorBot.Logic;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System.Linq;
 
 namespace CrMonitorBot
 {
@@ -16,6 +22,40 @@ namespace CrMonitorBot
                 }
             }
             return Index;
+        }
+        public async Task<HttpStatusCode> RealCheck(string r)
+        {
+            try
+            {
+                using var client = new HttpClient();
+                HttpResponseMessage response = await client.GetAsync("https://api.coinpaprika.com/v1/tickers/btc-bitcoin?quotes=" + r);
+                response.EnsureSuccessStatusCode();
+
+            }
+            catch (HttpRequestException)
+            {
+                return HttpStatusCode.BadRequest;
+            }
+            return HttpStatusCode.OK;
+        }
+        public async Task<HttpStatusCode> CryptoCheck(string r)
+        {
+            try
+            {
+                r = r.ToLower();
+                using var client = new HttpClient();
+                string response0 = await client.GetStringAsync("https://crmonapi.azurewebsites.net/crypto/coinslist");
+                Dictionary<string, string> d = JsonConvert.DeserializeObject<Dictionary<string, string>>(response0);
+                r = d.FirstOrDefault(x => x.Value == r).Key;
+                HttpResponseMessage response = await client.GetAsync("https://crmonapi.azurewebsites.net/crypto/coins/info/"+r);
+                response.EnsureSuccessStatusCode();
+
+            }
+            catch (HttpRequestException)
+            {
+                return HttpStatusCode.BadRequest;
+            }
+            return HttpStatusCode.OK;
         }
     }
 }
