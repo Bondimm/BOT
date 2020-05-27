@@ -57,5 +57,20 @@ namespace CrMonitorBot
             }
             return HttpStatusCode.OK;
         }
+        public async Task<bool> CryptoExist(string r, string userid)
+        {
+            bool ex = false;
+            using var client = new HttpClient();
+            var content = await client.GetStringAsync("https://crmonapi.azurewebsites.net/crypto/user/" + userid);
+            List<Tickers> show = JsonConvert.DeserializeObject<List<Tickers>>(content);
+            foreach (var a in show)
+            {
+                if(a.Name == r)
+                {
+                    ex = true;
+                }
+            }
+            return ex;
+        }
     }
 }

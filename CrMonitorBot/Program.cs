@@ -79,13 +79,24 @@ namespace CrMonitorBot
                 var x = await c.CryptoCheck(buttonText);
                 if(x == System.Net.HttpStatusCode.OK)
                 {
-                    await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ChangeCryptoInstruction2);
+                    bool exist = await c.CryptoExist(buttonText, e.CallbackQuery.From.Id.ToString());
+                    if (exist == false)
+                    {
+                        await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ButtonState);
+                        return;
+                    }
+                    else
+                    {
+                        await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ChangeCryptoInstruction2);
+                    }
                 }
                 else
                 {
                     await Bot.SendTextMessageAsync(e.CallbackQuery.From.Id, Reply.ButtonState);
                     return;
                 }
+                
+
                 bool ex = currency_to_change_from_button.ContainsKey(e.CallbackQuery.From.Id);
                 if (ex == false)
                 {
