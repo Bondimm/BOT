@@ -36,7 +36,7 @@ namespace CrMonitorBot
         }
         static void Main()
         {
-            Bot = new TelegramBotClient("1150211203:AAGRIGVvt3iK3-vbkGzeTvDgV1kDJxtLDeI");
+            Bot = new TelegramBotClient("");
             Bot.OnMessage += Bot_OnMessage;
             Bot.OnCallbackQuery += Bot_OnCallbackQuery;
             var me = Bot.GetMeAsync().Result;
